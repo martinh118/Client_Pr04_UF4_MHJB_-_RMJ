@@ -1,26 +1,31 @@
-const HTTP = require('http');
+import * as fs from 'fs';
+import * as HTTP from 'http';
 
 function onRequest(peticio, resposta) {
-	console.log(peticio.method + ": " + peticio.url);
+    console.log(peticio.method + ": " + peticio.url);
 
-	// Mostrar paràmetres rebuts en la URL (GET)
-	const base = 'http://' + peticio.headers.host + '/';
-	const url = new URL(peticio.url, base);
-	
+    const base = 'http://' + peticio.headers.host + '/';
+    const url = new URL(peticio.url, base);
 
-    switch (perticio.url) {
-        case "/":
-            resposta.statusCode = 200;
-            resposta.setHeader('Content-Type', 'text/html');
-            resposta.end('Hello World!<br>' + url.searchParams);
-            console.log("------");
-            break;
-    
-        default:
-            break;
+    if (peticio.url == "/" && peticio.method == "GET") {
+
+
+        console.log("Enviant index.html");
+
+        fs.readFile("index.html", function (err, dades) {
+            let cType = "html";
+            header(resposta, 200, cType);
+            resposta.end(dades);
+
+        });
     }
-	// Generar i enviar resposta
-	
+}
+
+function header(resposta, codi, cType) {
+    resposta.setHeader('Access-Control-Allow-Origin', '*');
+    resposta.setHeader('Access-Control-Allow-Methods', 'GET');
+    if (cType) resposta.writeHead(codi, { 'Content-Type': cType + '; charset=utf-8' });
+    else resposta.writeHead(codi);
 }
 
 const server = HTTP.createServer();
