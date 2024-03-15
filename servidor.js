@@ -9,14 +9,12 @@ function onRequest(peticio, resposta) {
 
     if (peticio.url == "/" && peticio.method == "GET") {
 
-
         console.log("Enviant index.html");
 
         fs.readFile("index.html", function (err, dades) {
             let cType = "html";
             header(resposta, 200, cType);
             resposta.end(dades);
-
         });
     }
 }
