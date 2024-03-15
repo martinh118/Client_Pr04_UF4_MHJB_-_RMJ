@@ -1,4 +1,5 @@
 
+
 fetch('http://localhost:8080', { method: 'POST', body: JSON.stringify({ "accion": "esborrar", "identificador": id }) })
 .then(response => {
     // Verificar si la solicitud fue exitosa
@@ -17,3 +18,6 @@ fetch('http://localhost:8080', { method: 'POST', body: JSON.stringify({ "accion"
     // Capturar y manejar cualquier error
     console.error('Error:', error);
 });
+
+
+
