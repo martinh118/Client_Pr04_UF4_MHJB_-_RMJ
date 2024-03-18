@@ -15,9 +15,8 @@ fetch('http://localhost:8080', { method: 'GET' })
     // Capturar y manejar cualquier error
     console.error('Error:', error);
 });
-
 function verLibro(id){
-    fetch('http://localhost:8080/libro/', { method: 'GET', body: JSON.stringify({ "accion": "visualizar", "identificador": id }) })
+    fetch('http://localhost:8080/libro?id='+id, { method: 'GET' })
     .then(response => {
         // Verificar si la solicitud fue exitosa
         if (!response.ok) {
