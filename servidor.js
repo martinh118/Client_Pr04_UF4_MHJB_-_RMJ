@@ -13,14 +13,17 @@ function onRequest(peticio, resposta) {
             console.error(err);
         });
 
-        const base = 'http://' + peticio.headers.host + '/';
-        const url = new URL(peticio.url, base);
-
-        let filename = "." + url.pathname;
-        if (filename == "./") filename += "index.html";
+       
         if (peticio.method == "GET" && peticio.url.indexOf("?")==-1) {
+
+            const base = 'http://' + peticio.headers.host + '/';
+            const url = new URL(peticio.url, base);
+    
+            let filename = "." + url.pathname;
+            if (filename == "./") filename += "index.html";
+
             if (fs.existsSync(filename)) {
-                console.log("Enviant " + filename);
+                //console.log("Enviant " + filename);
 
                 fs.readFile(filename, function (err, dades) {
                     let cType = tipusArxiu(filename);
@@ -36,6 +39,18 @@ function onRequest(peticio, resposta) {
             else missatgeError(resposta, 404, "Not Found (" + filename + ")");
         }else {
             
+            let objectPeticion = JSON.parse(cosPeticio);
+            let datosRespuesta;
+            switch (objectPeticion["accion"]) {
+                case "visualizar":
+                    
+                    break;
+            
+                default:
+                    break;
+            }
+
+            //missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
         }
     });
 }
@@ -74,6 +89,24 @@ function missatgeError(resposta, cError, missatge) {
     header(resposta, cError, 'text/html');
     resposta.end("<p style='text-align:center;font-size:1.2rem;font-weight:bold;color:red'>" + missatge + "</p>");
     console.log("\t" + cError + " " + missatge);
+}
+
+
+function missatgeResposta(resposta, dades, cType) {
+	header(resposta, 200, cType);
+	resposta.end(dades);
+}
+
+// Función para extraer las páginas del EPUB
+function extractPages(epubFilePath, callback) {
+    const epub = new EPub(epubFilePath);
+
+    epub.on('end', function () {
+        const pages = epub.flow.map((page, index) => page);
+        callback(null, pages);
+    });
+
+    epub.parse();
 }
 
 const server = HTTP.createServer();
