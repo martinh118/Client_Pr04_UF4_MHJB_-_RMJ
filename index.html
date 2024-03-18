@@ -6,11 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
     <title>Free Readers</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+    <script src=".\node_modules\epubjs\dist\epub.min.js"></script>
+    <link rel="stylesheet" href="index.css">
+    <script defer src="./cliente.js"></script>
 
 
-  </head>
 
-<body>
+</head>
+
+<body id="bodyId">
+    <a id="prev" href="#prev" class="arrow" style="visibility: visible;">‹</a>
+    <a id="next" href="#next" class="arrow" style="visibility: visible;">›</a>
+    <div id="area">
+    </div>
+
+    <div id="viewer" class="spreads"></div>
+
     <table>
         <thead>
             <tr>
@@ -25,9 +37,7 @@
 
     <button id="visualizar">Accionar libro</button>
 
-    <div id="area">
 
-    </div>
 </body>
 
 </html>

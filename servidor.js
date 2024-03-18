@@ -8,10 +8,11 @@ import {authenticate} from '@google-cloud/local-auth';
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credenciales_MHJB.json');
 
-async function loadSavedCredentialsIfExist() {
+function loadSavedCredentialsIfExist() {
     try {
-        const content = await fs.readFile(TOKEN_PATH);
+        const content = fs.readFile(CREDENTIALS_PATH);
         const credentials = JSON.parse(content);
+        console.log(credentials);
         return google.auth.fromJSON(credentials);
     } catch (err) {
         return null;
@@ -149,6 +150,7 @@ const FILE_TYPES = {
     ico: "image/ico",
     jpg: "image/jpeg",
     jpeg: "image/jpeg",
+    epub: "application/epub"
 };
 
 function tipusArxiu(filename) {

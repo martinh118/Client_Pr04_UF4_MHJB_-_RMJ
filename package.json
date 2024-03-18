@@ -2,6 +2,7 @@
     "type": "module",
     "dependencies": {
         "@google-cloud/local-auth": "^2.1.0",
+        "@parkdoeui/epubjs": "^4.0.0",
         "epubjs": "^0.3.93",
         "googleapis": "^105.0.0"
     }
