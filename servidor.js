@@ -6,7 +6,7 @@ import { google } from 'googleapis';
 import {authenticate} from '@google-cloud/local-auth';
 
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
-const CREDENTIALS_PATH = path.join(process.cwd(), 'credenciales_MHJB.json');
+const CREDENTIALS_PATH = path.join(process.cwd(), './credenciales/credenciales_MHJB.json');
 
 function loadSavedCredentialsIfExist() {
     try {
@@ -97,8 +97,9 @@ function onRequest(peticio, resposta) {
         const url = new URL(peticio.url, base);
 
         let filename = "." + url.pathname;
-        if (filename == "./") filename += "index.html";
+        if (filename == "./") filename += "vista/index.html";
         if (peticio.method == "GET" && peticio.url.indexOf("?")==-1) {
+            
             if (fs.existsSync(filename)) {
                 //console.log("Enviant " + filename);
 
