@@ -1,81 +1,45 @@
 import * as fs from 'fs';
 import * as HTTP from 'http';
-import path from 'path';
-import  process from 'process';
 import { google } from 'googleapis';
-import {authenticate} from '@google-cloud/local-auth';
 
-const CREDENTIALS_PATH = path.join(process.cwd(), 'credentialsAdmin.json');
 
-function loadSavedCredentialsIfExist() {
-    try {
-        const content = fs.readFileSync(CREDENTIALS_PATH);
-        const credentials = JSON.parse(content);
-        return google.auth.fromJSON(credentials);
-    } catch (err) {
-        console.log(err)
-    }
-}
-
-/**
- * Serializes credentials to a file compatible with GoogleAuth.fromJSON.
- *
- * @param {OAuth2Client} client
- * @return {Promise<void>}
- */
-function saveCredentials(client) {
-    const content = fs.readFile(CREDENTIALS_PATH);
-    const keys = JSON.parse(content);
-    const key = keys.installed || keys.web;
-    const payload = JSON.stringify({
-        type: 'authorized_user',
-        client_id: key.client_id,
-        client_secret: key.client_secret,
-        refresh_token: client.credentials.refresh_token,
-    });
-    fs.writeFileSync(payload);
-}
-
-/**
- * Load or request or authorization to call APIs.
- *
- */
-async function authorize() {
-    let client = loadSavedCredentialsIfExist();
-    if (client) {
-        return client;
-    }
-    client = await authenticate({
-        keyfilePath: CREDENTIALS_PATH,
-    });
-    if (client.credentials) {
-        await saveCredentials(client);
-    }
-    return client;
-}
-
-/**
- * Lists the names and IDs of up to 10 files.
- * @param {OAuth2Client} authClient An authorized OAuth2 client.
- */
-async function listFiles(authClient) {
-    console.log(authClient)
-    const drive = google.drive({version: 'v2', auth: authClient});
-    const res = await drive.files.list();
-    const files = res.data.files;
-    console.log(res)
-    if (files.length === 0) {
-        console.log('No files found.');
-        return;
-}
-
-console.log('Files:');
-files.map((file) => {
-    console.log(`${file.name} (${file.id})`);
+const carpetaArrelID="1Lod7g3tfVG_5njZCUW-EnkxY_zTAAaAG"
+const auth = new google.auth.GoogleAuth({
+    keyFile: 'credentialsAdmin.json',
+    scopes: ['https://www.googleapis.com/auth/drive'],
 });
-}
+const drive = google.drive({version: 'v3', auth});
 
-authorize().then(listFiles).catch(console.error);
+
+
+/* (async () => {
+    const driveResponse = await drive.files.create({
+        requestBody: {
+            name: "El Arte de ka guerra",
+            mimeType: "application/epub",
+            parents: [carpetaArrelID]
+        },
+        media: {
+            mimeType: "application/epub",
+            body: fs.createReadStream("./libros_epub/El_arte_de_la_guerra-Sun_Tzu.epub")
+        },
+        fields: 'id, name'
+    });
+    console.log(driveResponse.data.files);
+})().catch(e => {
+    console.log(e);
+}); */ 
+
+//Get FILES
+(async () => {
+    const driveResponse = await drive.files.list({
+        q: `parents in '${carpetaArrelID}' and trashed=false`,
+        fields: 'files(id, name)'
+    });
+    console.log(driveResponse.data.files);
+})().catch(e => {
+    console.log(e);
+}); 
 
 //Peticiones
 function onRequest(peticio, resposta) {
@@ -95,8 +59,8 @@ function onRequest(peticio, resposta) {
 
         let filename = "." + url.pathname;
         if (filename == "./") filename += "vista/index.html";
-        if (peticio.method == "GET" && peticio.url.indexOf("?")==-1) {
-            
+        if (peticio.method == "GET" && peticio.url.indexOf("?") == -1) {
+
             if (fs.existsSync(filename)) {
                 //console.log("Enviant " + filename);
 
@@ -112,15 +76,15 @@ function onRequest(peticio, resposta) {
                 });
             }
             else missatgeError(resposta, 404, "Not Found (" + filename + ")");
-        }else if(peticio.url.indexOf("libro")!=-1){
-            
+        } else if (peticio.url.indexOf("libro") != -1) {
+
             let objectPeticion = JSON.parse(cosPeticio);
             let datosRespuesta;
             switch (objectPeticion["accion"]) {
                 case "visualizar":
-                    
+
                     break;
-            
+
                 default:
                     break;
             }
@@ -169,8 +133,8 @@ function missatgeError(resposta, cError, missatge) {
 
 
 function missatgeResposta(resposta, dades, cType) {
-	header(resposta, 200, cType);
-	resposta.end(dades);
+    header(resposta, 200, cType);
+    resposta.end(dades);
 }
 
 // Función para extraer las páginas del EPUB
