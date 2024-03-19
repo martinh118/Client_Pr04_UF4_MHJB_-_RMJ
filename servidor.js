@@ -94,8 +94,9 @@ function onRequest(peticio, resposta) {
         const url = new URL(peticio.url, base);
 
         let filename = "." + url.pathname;
-        if (filename == "./") filename += "index.html";
+        if (filename == "./") filename += "vista/index.html";
         if (peticio.method == "GET" && peticio.url.indexOf("?")==-1) {
+            
             if (fs.existsSync(filename)) {
                 //console.log("Enviant " + filename);
 

@@ -548,3 +548,8 @@
 :root .resultsList>div>div>div>div.G-5c[role="tab"][tabindex="0"]>.yuAt-pres-rounded {
     display: none !important;
 }
+
+
+table,tr,th,td{
+    border: 1px solid black;
+}
