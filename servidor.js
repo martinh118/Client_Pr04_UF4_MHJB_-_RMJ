@@ -5,17 +5,15 @@ import  process from 'process';
 import { google } from 'googleapis';
 import {authenticate} from '@google-cloud/local-auth';
 
-const TOKEN_PATH = path.join(process.cwd(), 'token.json');
-const CREDENTIALS_PATH = path.join(process.cwd(), 'credenciales_MHJB.json');
+const CREDENTIALS_PATH = path.join(process.cwd(), 'credentialsAdmin.json');
 
 function loadSavedCredentialsIfExist() {
     try {
-        const content = fs.readFile(CREDENTIALS_PATH);
+        const content = fs.readFileSync(CREDENTIALS_PATH);
         const credentials = JSON.parse(content);
-        console.log(credentials);
         return google.auth.fromJSON(credentials);
     } catch (err) {
-        return null;
+        console.log(err)
     }
 }
 
@@ -25,8 +23,8 @@ function loadSavedCredentialsIfExist() {
  * @param {OAuth2Client} client
  * @return {Promise<void>}
  */
-async function saveCredentials(client) {
-    const content = await fs.readFile(CREDENTIALS_PATH);
+function saveCredentials(client) {
+    const content = fs.readFile(CREDENTIALS_PATH);
     const keys = JSON.parse(content);
     const key = keys.installed || keys.web;
     const payload = JSON.stringify({
@@ -35,7 +33,7 @@ async function saveCredentials(client) {
         client_secret: key.client_secret,
         refresh_token: client.credentials.refresh_token,
     });
-    await fs.writeFile(TOKEN_PATH, payload);
+    fs.writeFileSync(payload);
 }
 
 /**
@@ -43,7 +41,7 @@ async function saveCredentials(client) {
  *
  */
 async function authorize() {
-    let client = await loadSavedCredentialsIfExist();
+    let client = loadSavedCredentialsIfExist();
     if (client) {
         return client;
     }
@@ -61,12 +59,11 @@ async function authorize() {
  * @param {OAuth2Client} authClient An authorized OAuth2 client.
  */
 async function listFiles(authClient) {
-    const drive = google.drive({version: 'v3', auth: authClient});
-    const res = await drive.files.list({
-        pageSize: 10,
-        fields: 'nextPageToken, files(id, name)',
-    });
+    console.log(authClient)
+    const drive = google.drive({version: 'v2', auth: authClient});
+    const res = await drive.files.list();
     const files = res.data.files;
+    console.log(res)
     if (files.length === 0) {
         console.log('No files found.');
         return;
