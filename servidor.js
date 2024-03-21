@@ -5,7 +5,7 @@ import JSZip from 'jszip';
 import saveAs from 'file-saver';
 
 
-
+const libroID="1bjZDqVLMGMNdQuIeTpBONE7yMcPeTlF2"
 const carpetaArrelID = "1Lod7g3tfVG_5njZCUW-EnkxY_zTAAaAG"
 const auth = new google.auth.GoogleAuth({
     keyFile: 'credentialsAdmin.json',
@@ -43,16 +43,27 @@ const drive = google.drive({ version: 'v3', auth });
     console.log(e);
 });  */
 
-//OBTENER
-/* (async () => {
-    const driveResponse = await drive.files.get({
-        fileId: libroID,
-        alt: 'media'
+(async () => {
+    const driveResponse = await drive.files.list({
+        q: `parents in '${carpetaArrelID}' and trashed=false`,
+        fields: 'files(id, name)'
     });
-    console.log(driveResponse);
+    console.log(driveResponse.data.files);
 })().catch(e => {
     console.log(e);
-});  */
+});
+//OBTENER
+(async () => {
+    const driveResponse = await drive.files.get({
+        fileId: libroID,
+        alt: 'media',
+    },{responseType: "stream"});
+    const f=fs.createWriteStream("./libros_epub/fichero.epub",)
+    console.log(driveResponse.data.pipe(f))
+    
+})().catch(e => {
+    console.log(e);
+}); 
 
 //EXPORTAR
 /* (async () => {
@@ -66,7 +77,10 @@ const drive = google.drive({ version: 'v3', auth });
 }); */
 
 //Peticiones
-function onRequest(peticio, resposta) {
+function onRequest(peticio, resposta){
+    
+}
+/* function onRequest(peticio, resposta) {
     let cosPeticio = "";
 
     peticio.on('error', function (err) {
@@ -209,7 +223,7 @@ function extractPages(epubFilePath, callback) {
     });
 
     epub.parse();
-}
+} */
 
 const server = HTTP.createServer();
 server.on('request', onRequest);
