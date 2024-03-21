@@ -106,30 +106,45 @@ function onRequest(peticio, resposta) {
             let datosRespuesta;
             switch (objectPeticion["accion"]) {
                 case "visualizar":
-                    fs.readFileSync("./libros_epub/" + objectPeticion['idLibro'], function (err, data) {
-                        if (!err) {
-                            var zip = new JSZip();
-                            zip.loadAsync(data).then(function (contents) {
-                                Object.keys(contents.files).forEach(function (filename) {
-                                    console.log(filename);
 
-                                    zip.file(filename);
+                    (async () => {
+                        const libroEpubDrive = await drive.files.get({
+                            fileId: objectPeticion["idLibro"],
+                            alt: 'media'
+                        }, {
+                            responseType:"stream"
+                        });
+                        console.log(libroEpubDrive);
+                        
 
-                                    // zip.file(filename).async('nodebuffer').then(function (content) {
-                                    //     var dest = path + filename;
-                                    //     fs.writeFileSync(dest, content);
-                                    //     console.log(content);
-                                    // });
-
-                                });
-                            });
-                            // zip.generateAsync({ type: "blob" }).then(function (content) {
-                            //     // see FileSaver.js
-                            //     let name = objectPeticion['idLibro'].split(".")[0];
-                            //     saveAs(content, "./" + name + ".zip");
-                            // });
-                        }
+                    })().catch(e => {
+                        console.log(e);
                     });
+
+                    // fs.readFileSync("./libros_epub/" + objectPeticion['idLibro'], function (err, data) {
+                    //     if (!err) {
+                    //         var zip = new JSZip();
+                    //         zip.loadAsync(data).then(function (contents) {
+                    //             Object.keys(contents.files).forEach(function (filename) {
+                    //                 console.log(filename);
+
+                    //                 zip.file(filename);
+
+                    //                 // zip.file(filename).async('nodebuffer').then(function (content) {
+                    //                 //     var dest = path + filename;
+                    //                 //     fs.writeFileSync(dest, content);
+                    //                 //     console.log(content);
+                    //                 // });
+
+                    //             });
+                    //         });
+                    //         // zip.generateAsync({ type: "blob" }).then(function (content) {
+                    //         //     // see FileSaver.js
+                    //         //     let name = objectPeticion['idLibro'].split(".")[0];
+                    //         //     saveAs(content, "./" + name + ".zip");
+                    //         // });
+                    //     }
+                    // });
                     break;
 
                 case "libreria":
@@ -146,11 +161,11 @@ function onRequest(peticio, resposta) {
                         console.log(e);
                     });
                     break;
-                    default:
+                default:
                     break;
             }
 
-           
+
 
         }
     });

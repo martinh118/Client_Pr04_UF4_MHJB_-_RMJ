@@ -26,14 +26,14 @@ function mostrarLibrosTabla(libreria){
     let html = "";
     for (const libro of libreria) {
         html += `<tr>
-            <td id='${libro['id']}'>${libro['name']}</td>
+            <td id='${libro['id']}' class='libro'>${libro['name']}</td>
         </tr>`;
     }
 
     $("#bodyLibros").html(html);
 }
 
-function verLibro(libro) {
+function pedirLibro(libro) {
     fetch('http://localhost:8080/', { method: 'POST', body: JSON.stringify({ "accion": "visualizar", 'idLibro': libro}) })
         .then(async (response) => {
             // Verificar si la solicitud fue exitosa
@@ -204,12 +204,15 @@ function mostrarLibro(libroEpub) {
 
 }
 
-$(".libroVisualizar").click(function (event) {
-    let idLibro = event.target.id;
-    $("#botonesControlLibro").removeAttr("hidden");
+
+$(document).ready(function () {
+    $("tbody").on("click", "td.libro", function (ev) {
+        let idLibro = ev.target.id;
+        $("#botonesControlLibro").removeAttr("hidden");
    
-    verLibro(idLibro);
-    
-})
+        pedirLibro(idLibro);
+    });
+});
+
 
 window.onload = pedirLibreria;
