@@ -33,7 +33,37 @@ const drive = google.drive({ version: 'v3', auth });
     console.log(e);
 }); */
 
+//ELIMINAR
+/* (async () => {
+    const driveResponse = await drive.files.delete({
+        fileId: libroID
+    });
+    console.log(driveResponse.status);
+})().catch(e => {
+    console.log(e);
+});  */
 
+//OBTENER
+/* (async () => {
+    const driveResponse = await drive.files.get({
+        fileId: libroID,
+        alt: 'media'
+    });
+    console.log(driveResponse);
+})().catch(e => {
+    console.log(e);
+});  */
+
+//EXPORTAR
+/* (async () => {
+    const driveResponse = await drive.files.export({
+        fileId: libroID,
+        mimeType: 'application/gzip'
+    });
+    console.log(driveResponse);
+})().catch(e => {
+    console.log(e);
+}); */
 
 //Peticiones
 function onRequest(peticio, resposta) {
