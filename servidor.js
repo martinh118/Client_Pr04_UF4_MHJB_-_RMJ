@@ -1,17 +1,14 @@
 import * as fs from 'fs';
 import * as HTTP from 'http';
 import { google } from 'googleapis';
-import JSZip from 'jszip';
-import saveAs from 'file-saver';
 
 
-
-const carpetaArrelID = "1Lod7g3tfVG_5njZCUW-EnkxY_zTAAaAG"
+const carpetaArrelID="1Lod7g3tfVG_5njZCUW-EnkxY_zTAAaAG"
 const auth = new google.auth.GoogleAuth({
     keyFile: 'credentialsAdmin.json',
     scopes: ['https://www.googleapis.com/auth/drive'],
 });
-const drive = google.drive({ version: 'v3', auth });
+const drive = google.drive({version: 'v3', auth});
 
 
 
@@ -31,9 +28,18 @@ const drive = google.drive({ version: 'v3', auth });
     console.log(driveResponse.data.files);
 })().catch(e => {
     console.log(e);
-}); */
+}); */ 
 
-
+//Get FILES
+(async () => {
+    const driveResponse = await drive.files.list({
+        q: `parents in '${carpetaArrelID}' and trashed=false`,
+        fields: 'files(id, name)'
+    });
+    console.log(driveResponse.data.files);
+})().catch(e => {
+    console.log(e);
+}); 
 
 //Peticiones
 function onRequest(peticio, resposta) {
@@ -70,58 +76,20 @@ function onRequest(peticio, resposta) {
                 });
             }
             else missatgeError(resposta, 404, "Not Found (" + filename + ")");
-        } else {
+        } else if (peticio.url.indexOf("libro") != -1) {
 
             let objectPeticion = JSON.parse(cosPeticio);
             let datosRespuesta;
             switch (objectPeticion["accion"]) {
                 case "visualizar":
-                    fs.readFileSync("./libros_epub/" + objectPeticion['idLibro'], function (err, data) {
-                        if (!err) {
-                            var zip = new JSZip();
-                            zip.loadAsync(data).then(function (contents) {
-                                Object.keys(contents.files).forEach(function (filename) {
-                                    console.log(filename);
 
-                                    zip.file(filename);
-
-                                    // zip.file(filename).async('nodebuffer').then(function (content) {
-                                    //     var dest = path + filename;
-                                    //     fs.writeFileSync(dest, content);
-                                    //     console.log(content);
-                                    // });
-
-                                });
-                            });
-                            // zip.generateAsync({ type: "blob" }).then(function (content) {
-                            //     // see FileSaver.js
-                            //     let name = objectPeticion['idLibro'].split(".")[0];
-                            //     saveAs(content, "./" + name + ".zip");
-                            // });
-                        }
-                    });
                     break;
 
-                case "libreria":
-                    //Get FILES
-                    (async () => {
-                        const driveResponse = await drive.files.list({
-                            q: `parents in '${carpetaArrelID}' and trashed=false`,
-                            fields: 'files(id, name)'
-                        });
-                        console.log(driveResponse.data.files);
-                        datosRespuesta = driveResponse.data.files;
-                        missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
-                    })().catch(e => {
-                        console.log(e);
-                    });
-                    break;
-                    default:
+                default:
                     break;
             }
 
-           
-
+            //missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
         }
     });
 }

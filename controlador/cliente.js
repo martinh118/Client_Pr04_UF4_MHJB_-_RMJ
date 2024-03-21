@@ -1,52 +1,15 @@
-
-function pedirLibreria(){
-    fetch('http://localhost:8080/', { method: 'POST', body: JSON.stringify({ "accion": "libreria"}) })
-    .then(async (response) => {
-        // Verificar si la solicitud fue exitosa
-        if (!response.ok) {
-            throw new Error('Error al obtener el archivo JSON');
-        }
-        let res=response.json();
-        return await res;
-    })
-    .then(data => {
-        // Hacer algo con los datos obtenidos
-        let libreria = data;
-        console.log(libreria);
-        mostrarLibrosTabla(libreria);
-        //aplicarBodyTabla(data);
-    })
-    .catch(error => {
-        // Capturar y manejar cualquier error
-        console.error('Error:', error);
-    });
-}
-
-function mostrarLibrosTabla(libreria){
-    let html = "";
-    for (const libro of libreria) {
-        html += `<tr>
-            <td id='${libro['id']}'>${libro['name']}</td>
-        </tr>`;
-    }
-
-    $("#bodyLibros").html(html);
-}
-
-function verLibro(libro) {
-    fetch('http://localhost:8080/', { method: 'POST', body: JSON.stringify({ "accion": "visualizar", 'idLibro': libro}) })
-        .then(async (response) => {
+function verLibro() {
+    fetch('http://localhost:8080/', { method: 'POST', body: JSON.stringify({ "accion": "visualizar" }) })
+        .then(response => {
             // Verificar si la solicitud fue exitosa
             if (!response.ok) {
                 throw new Error('Error al obtener el archivo JSON');
             }
-            let res=response.json();
-            return await res;
+            return response.json();
         })
         .then(data => {
             // Hacer algo con los datos obtenidos
-            let libro = JSON.parse(data)
-            console.log(libro);
+            console.log(JSON.parse(data));
             //aplicarBodyTabla(data);
         })
         .catch(error => {
@@ -75,12 +38,13 @@ function borrarLibro(id) {
         });
 }
 
+
 function mostrarLibro(libroEpub) {
     var params = URLSearchParams && new URLSearchParams(document.location.search.substring(1));
     var url = params && params.get("url") && decodeURIComponent(params.get("url"));
     var currentSectionIndex = (params && params.get("loc")) ? params.get("loc") : undefined;
 
-    var book = ePub("../libros_epub/" + libroEpub);
+    var book = ePub("../libros_epub/"+ libroEpub);
     let body = document.getElementById("area");
     var rendition = book.renderTo("viewer", {
         flow: "scrolled-doc"
@@ -204,12 +168,8 @@ function mostrarLibro(libroEpub) {
 
 }
 
-$(".libroVisualizar").click(function (event) {
+$(".libroVisualizar").click(function(event){
     let idLibro = event.target.id;
     $("#botonesControlLibro").removeAttr("hidden");
-   
-    verLibro(idLibro);
-    
+    mostrarLibro(idLibro);
 })
-
-window.onload = pedirLibreria;
