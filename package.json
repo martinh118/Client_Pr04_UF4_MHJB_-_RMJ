@@ -4,7 +4,9 @@
         "@google-cloud/local-auth": "^2.1.0",
         "@parkdoeui/epubjs": "^4.0.0",
         "epubjs": "^0.3.93",
+        "file-saver": "^2.0.5",
         "google-auth-library": "^9.7.0",
-        "googleapis": "^105.0.0"
+        "googleapis": "^105.0.0",
+        "jszip": "^3.10.1"
     }
 }
