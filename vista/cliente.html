@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
     <title>Free Readers</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
-    <script src="..\node_modules\epubjs\dist\epub.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+    <script src="..\node_modules\epubjs\dist\epub.min.js"></script> -->
     <link rel="stylesheet" href="../css/client.css">
-    <script defer src="../controlador/cliente.js"></script>
+    <script type="module" src="../controlador/cliente.js"></script>
 
 
 
@@ -33,19 +33,13 @@
         <thead>
             <tr>
                 <th>Nom llibre</th>
-                <th>num Pagines</th>
-                <th>num Capitols</th>
             </tr>
         </thead>
-        <tbody>
-            <tr>
-                <td id="El_arte_de_la_guerra-Sun_Tzu.epub" class="libroVisualizar">El arte de la guerra</td>
-                <td>15</td>
-                <td>13</td>
-            </tr>
+        <tbody id="bodyLibros">
+            
         </tbody>
     </table>
-   
+   <br><br>
 
     <button id="visualizar"><a href="../vista/index.html">Tornar enrere</a></button>
 
