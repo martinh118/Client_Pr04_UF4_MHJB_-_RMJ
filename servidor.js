@@ -5,7 +5,7 @@ import JSZip from 'jszip';
 import saveAs from 'file-saver';
 
 
-const libroID="1bjZDqVLMGMNdQuIeTpBONE7yMcPeTlF2"
+const libroID = "1bjZDqVLMGMNdQuIeTpBONE7yMcPeTlF2"
 const carpetaArrelID = "1Lod7g3tfVG_5njZCUW-EnkxY_zTAAaAG"
 const auth = new google.auth.GoogleAuth({
     keyFile: 'credentialsAdmin.json',
@@ -43,27 +43,27 @@ const drive = google.drive({ version: 'v3', auth });
     console.log(e);
 });  */
 
-(async () => {
-    const driveResponse = await drive.files.list({
-        q: `parents in '${carpetaArrelID}' and trashed=false`,
-        fields: 'files(id, name)'
-    });
-    console.log(driveResponse.data.files);
-})().catch(e => {
-    console.log(e);
-});
-//OBTENER
-(async () => {
-    const driveResponse = await drive.files.get({
-        fileId: libroID,
-        alt: 'media',
-    },{responseType: "stream"});
-    const f=fs.createWriteStream("./libros_epub/fichero.epub",)
-    console.log(driveResponse.data.pipe(f))
-    
-})().catch(e => {
-    console.log(e);
-}); 
+// (async () => {
+//     const driveResponse = await drive.files.list({
+//         q: `parents in '${carpetaArrelID}' and trashed=false`,
+//         fields: 'files(id, name)'
+//     });
+//     console.log(driveResponse.data.files);
+// })().catch(e => {
+//     console.log(e);
+// });
+// //OBTENER
+// (async () => {
+//     const driveResponse = await drive.files.get({
+//         fileId: libroID,
+//         alt: 'media',
+//     },{responseType: "stream"});
+//     const f=fs.createWriteStream("./libros_epub/fichero.epub",)
+//     console.log(driveResponse.data.pipe(f))
+
+// })().catch(e => {
+//     console.log(e);
+// }); 
 
 //EXPORTAR
 /* (async () => {
@@ -77,10 +77,7 @@ const drive = google.drive({ version: 'v3', auth });
 }); */
 
 //Peticiones
-function onRequest(peticio, resposta){
-    
-}
-/* function onRequest(peticio, resposta) {
+function onRequest(peticio, resposta) {
     let cosPeticio = "";
 
     peticio.on('error', function (err) {
@@ -126,39 +123,41 @@ function onRequest(peticio, resposta){
                             fileId: objectPeticion["idLibro"],
                             alt: 'media'
                         }, {
-                            responseType:"stream"
+                            responseType: "stream"
                         });
-                        console.log(libroEpubDrive);
-                        
+                        const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
+                        console.log(libroEpubDrive.data.pipe(f));
+                        //console.log(libroEpubDrive);
+
+                        fs.readFileSync("./libros_epub/" + objectPeticion['idLibro'] + ".epub", function (err, data) {
+                            if (!err) {
+                                var zip = new JSZip();
+                                zip.loadAsync(data).then(function (contents) {
+                                    Object.keys(contents.files).forEach(function (filename) {
+                                        console.log(filename);
+
+                                        zip.file(filename);
+
+                                        // zip.file(filename).async('nodebuffer').then(function (content) {
+                                        //     var dest = path + filename;
+                                        //     fs.writeFileSync(dest, content);
+                                        //     console.log(content);
+                                        // });
+
+                                    });
+                                });
+                                // zip.generateAsync({ type: "blob" }).then(function (content) {
+                                //     // see FileSaver.js
+                                //     let name = objectPeticion['idLibro'].split(".")[0];
+                                //     saveAs(content, "./" + name + ".zip");
+                                // });
+                            }
+                        });
 
                     })().catch(e => {
                         console.log(e);
                     });
 
-                    // fs.readFileSync("./libros_epub/" + objectPeticion['idLibro'], function (err, data) {
-                    //     if (!err) {
-                    //         var zip = new JSZip();
-                    //         zip.loadAsync(data).then(function (contents) {
-                    //             Object.keys(contents.files).forEach(function (filename) {
-                    //                 console.log(filename);
-
-                    //                 zip.file(filename);
-
-                    //                 // zip.file(filename).async('nodebuffer').then(function (content) {
-                    //                 //     var dest = path + filename;
-                    //                 //     fs.writeFileSync(dest, content);
-                    //                 //     console.log(content);
-                    //                 // });
-
-                    //             });
-                    //         });
-                    //         // zip.generateAsync({ type: "blob" }).then(function (content) {
-                    //         //     // see FileSaver.js
-                    //         //     let name = objectPeticion['idLibro'].split(".")[0];
-                    //         //     saveAs(content, "./" + name + ".zip");
-                    //         // });
-                    //     }
-                    // });
                     break;
 
                 case "libreria":
@@ -238,7 +237,7 @@ function extractPages(epubFilePath, callback) {
     });
 
     epub.parse();
-} */
+}
 
 const server = HTTP.createServer();
 server.on('request', onRequest);
