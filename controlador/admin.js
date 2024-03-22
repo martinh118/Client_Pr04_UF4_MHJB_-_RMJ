@@ -77,10 +77,9 @@ function mostrarLibrosTabla(libreria){
 
 $("#buttonArchivoEpub").click(function(){
     let reader = new FileReader();
-    let files = $("#archivoEpub").files;
-    importarLibro();
+    let files = $("#archivoEpub").val();
     console.log(files);
-    //reader.readAsDataURL(files[0]);
+    reader.readAsDataURL(files[0]);
 })
 
 $(document).ready(function () {

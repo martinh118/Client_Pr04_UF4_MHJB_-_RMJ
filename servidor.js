@@ -119,10 +119,7 @@ function onRequest(peticio, resposta) {
                 case "visualizar":
                     const urlLibro = "./libros_epub/" + objectPeticion["idLibro"] + ".epub";
 
-                    if (fs.existsSync(urlLibro)) {
-                        datosRespuesta = descomprimirLibro(urlLibro);
-
-                    } else if (!fs.existsSync(urlLibro)) {
+                    if (!fs.existsSync(urlLibro)) {
                         const libroEpubDrive = await drive.files.get({
                             fileId: objectPeticion["idLibro"],
                             alt: 'media'
@@ -132,6 +129,8 @@ function onRequest(peticio, resposta) {
                         const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
                         libroEpubDrive.data.pipe(f)
                     }
+
+                    datosRespuesta = descomprimirLibro(urlLibro);
 
                     missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
                     break;
