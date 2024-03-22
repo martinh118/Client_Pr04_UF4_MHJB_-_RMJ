@@ -190,25 +190,30 @@ async function descomprimirLibro(urlLibro) {
             })
         );
     });
-    
+
     // Espera a que todas las promesas de lectura se resuelvan
     const archivos = await Promise.all(archivosPromises);
+    
     let data;
-    parseString(archivos[archivos.length-1].contenido, function (err, results){
-        data= results.ncx.navMap[0].navPoint[0].content[0].$.src
-        
+
+    parseString(archivos[archivos.length - 1].contenido, function (err, results) {
+        data = results.ncx.navMap[0].navPoint[0].content[0].$.src
+
     })
-    for (let i = 0; i < archivos.length; i++) {
-        const archivo = archivos[i];
-        if(archivo.nombre.indexOf("OEBPS/Text/")!= -1){
-            if(archivo.nombre!="OEBPS/Text/"){
 
-                console.log("./libros_epub/LIBRO/"+archivo.nombre.split("/")[2])
-                let blob=new Blob([archivo.contenido],{ type:'application/xhtml+xml'})
-                let f=new File([blob],""+archivo.nombre.split("/")[2],{ type:'application/xhtml+xml'})
-                const fas = fs.createWriteStream("./libros_epub/LIBRO/"+archivo.nombre.split("/")[2],)
-                await f.stream().pipeTo(fas)
+    if (!fs.existsSync("./libros_epub/" + urlLibro.split("/")[2].split(".")[0])) {
 
+        fs.mkdirSync("./libros_epub/" + urlLibro.split("/")[2].split(".")[0])
+
+        for (let i = 0; i < archivos.length; i++) {
+            const archivo = archivos[i];
+            if (archivo.nombre.indexOf("OEBPS/Text/") != -1) {
+                if (archivo.nombre != "OEBPS/Text/") {
+
+                    const fas = fs.createWriteStream("./libros_epub/" + urlLibro.split("/")[2].split(".")[0] + "/" + archivo.nombre.split("/")[2])
+                    fas.write(archivo.contenido)
+
+                }
             }
         }
     }
