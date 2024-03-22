@@ -3,6 +3,8 @@ import * as fs from 'fs';
 import * as HTTP from 'http';
 import { google } from 'googleapis';
 import JSZip from 'jszip';
+import IncomingForm from 'formidable';
+
 import saveAs from 'file-saver';
 import { parseString } from 'xml2js';
 
@@ -113,6 +115,8 @@ function onRequest(peticio, resposta) {
             else missatgeError(resposta, 404, "Not Found (" + filename + ")");
         } else {
 
+            
+
             let objectPeticion = JSON.parse(cosPeticio);
             let datosRespuesta;
             switch (objectPeticion["accion"]) {
@@ -127,10 +131,10 @@ function onRequest(peticio, resposta) {
                             responseType: "stream"
                         });
                         const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
-                        libroEpubDrive.data.pipe(f).on("finish", ()=>{
+                        libroEpubDrive.data.pipe(f).on("finish", () => {
                             datosRespuesta = descomprimirLibro(urlLibro);
                         })
-                        
+
                     } else datosRespuesta = descomprimirLibro(urlLibro);
 
                     missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
@@ -148,7 +152,20 @@ function onRequest(peticio, resposta) {
 
                     break;
                 case "eliminarLibro":
-                    
+                    const form = IncomingForm();
+                    form.parse(peticio, function (err, fields, files) {
+                        console.log(fields);   // camps de text
+                        console.log(fields.nom);
+                        console.log(fields.edat);
+                        console.log(files);    // arxius
+        
+                        // Guardar l'arxiu
+                        // TODO: comprovar que realment s'ha pujat un arxiu!
+                        const temporal = files.arxiu.filepath;
+                        const actual = './' + files.arxiu.originalFilename;
+                        fs.copyFileSync(temporal, actual);  // Copiar a la destinació definitiva
+                        fs.unlinkSync(temporal);            // Esborrar la còpia temporal
+                    });
                     const driveResponseD = drive.files.delete({
                         fileId: objectPeticion["idLibro"]
                     });
@@ -156,18 +173,7 @@ function onRequest(peticio, resposta) {
 
                     break;
                 case "subirLibro":
-                    const driveResponse = await drive.files.create({
-                        requestBody: {
-                            name: "El Arte de la guerra",
-                            mimeType: "application/epub",
-                            parents: [carpetaArrelID]
-                        },
-                        media: {
-                            mimeType: "application/epub",
-                            body: fs.createReadStream("./libros_epub/El_arte_de_la_guerra-Sun_Tzu.epub")
-                        },
-                        fields: 'id, name'});
-                break;
+                    break;
                 default:
                     break;
             }

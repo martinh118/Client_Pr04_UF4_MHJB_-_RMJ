@@ -32,9 +32,7 @@ function peticionEliminarLibro(idLibro){
         return await res;
     })
     .then(data => {
-        // Hacer algo con los datos obtenidos
-        // pedirLibreria();
-        //aplicarBodyTabla(data);
+        alert("Llibre esborrat correctament.");
     })
     .catch(error => {
         // Capturar y manejar cualquier error
@@ -42,8 +40,8 @@ function peticionEliminarLibro(idLibro){
     });
 }
 
-function importarLibro(){
-    fetch('http://localhost:8080/', { method: 'POST', body: JSON.stringify({ "accion": "subirLibro"}) })
+function importarLibro(archivo){
+    fetch('http://localhost:8080/', { method: 'POST', body: JSON.stringify({"accion": "eliminarLibro" ,"libroEpub":archivo}) })
     .then(async (response) => {
         // Verificar si la solicitud fue exitosa
         if (!response.ok) {
@@ -53,9 +51,7 @@ function importarLibro(){
         return await res;
     })
     .then(data => {
-        // Hacer algo con los datos obtenidos
-        // pedirLibreria();
-        //aplicarBodyTabla(data);
+        alert("Llibre importat correctament.");
     })
     .catch(error => {
         // Capturar y manejar cualquier error
@@ -76,10 +72,13 @@ function mostrarLibrosTabla(libreria){
 }
 
 $("#buttonArchivoEpub").click(function(){
-    let reader = new FileReader();
-    let files = $("#archivoEpub").val();
-    console.log(files);
-    reader.readAsDataURL(files[0]);
+   
+    const fd = new FormData(document.getElementById("formulari"));
+    fd.append("archivoLibro", $("input[type=file]").prop('files')[0]);
+
+    
+    importarLibro(fd);
+    reader.readAsDataURL(files);
 })
 
 $(document).ready(function () {
