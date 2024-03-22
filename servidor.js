@@ -120,11 +120,11 @@ function onRequest(peticio, resposta) {
                 case "visualizar":
                     const urlLibro = "./libros_epub/" + objectPeticion["idLibro"] + ".epub";
 
-                    
-                    if(fs.existsSync(urlLibro)){
+
+                    if (fs.existsSync(urlLibro)) {
                         datosRespuesta = descomprimirLibro(urlLibro);
-                        
-                    }else if (!fs.existsSync(urlLibro)) {
+
+                    } else if (!fs.existsSync(urlLibro)) {
 
                         (async () => {
                             const libroEpubDrive = await drive.files.get({
@@ -136,16 +136,16 @@ function onRequest(peticio, resposta) {
                             const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
                             console.log(libroEpubDrive.data.pipe(f));
                             //console.log(libroEpubDrive);
-
+                           
                         })().catch(e => {
                             console.log(e);
                         });
 
-                        datosRespuesta = descomprimirLibro(urlLibro);
+
                     }
-                    
+
                     missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
-                break;
+                    break;
 
                 case "libreria":
                     //Get FILES
@@ -171,25 +171,34 @@ function onRequest(peticio, resposta) {
     });
 }
 
-async function descomprimirLibro(urlLibro){
-    // Carga el archivo ZIP utilizando un FileReader
-    const contenidoLibro = await fsPromise.readFile(urlLibro);
-    // Crea una instancia de JSZip a partir del archivo ZIP
-    const zip = new JSZip();
-    // Descomprime el archivo ZIP
-    const zipContents = await zip.loadAsync(contenidoLibro);
-     // Accede a los archivos del archivo ZIP descomprimido
-     const archivos = [];
+async function descomprimirLibro(urlLibro) {
+     // Lee el archivo EPUB
+     const contenidoLibro = await fsPromise.readFile(urlLibro);
+        
+     // Crea una instancia de JSZip
+     const zip = new JSZip();
+
+     // Carga el contenido del archivo EPUB en JSZip
+     const zipContents = await zip.loadAsync(contenidoLibro);
+
+     // Procesa los archivos descomprimidos
+     const archivosPromises = [];
      zipContents.forEach((relativePath, file) => {
-        console.log("Nombre del archivo:", relativePath);
-        // Accede al contenido del archivo
-        file.async("string").then((content) => {
-            archivos.push({
-                nombre: relativePath,
-                contenido: content
-            });
-        });
-    });
+         // Agrega la promesa de leer el contenido del archivo al arreglo de promesas
+         console.log(relativePath);
+         archivosPromises.push(
+             file.async("string").then((content) => {
+                 return {
+                     nombre: relativePath,
+                     contenido: content
+                 };
+             })
+         );
+     });
+
+     // Espera a que todas las promesas de lectura se resuelvan
+     const archivos = await Promise.all(archivosPromises);
+     
     return archivos;
 }
 
@@ -236,17 +245,7 @@ function missatgeResposta(resposta, dades, cType) {
     resposta.end(dades);
 }
 
-// Función para extraer las páginas del EPUB
-function extractPages(epubFilePath, callback) {
-    const epub = new EPub(epubFilePath);
 
-    epub.on('end', function () {
-        const pages = epub.flow.map((page, index) => page);
-        callback(null, pages);
-    });
-
-    epub.parse();
-}
 
 const server = HTTP.createServer();
 server.on('request', onRequest);

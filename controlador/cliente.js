@@ -45,8 +45,10 @@ function pedirLibro(libro) {
         })
         .then(data => {
             // Hacer algo con los datos obtenidos
-            let libro = JSON.parse(data)
+            let libro = data
             console.log(libro);
+            var book = ePub(libro);
+            mostrarLibro(book);
             //aplicarBodyTabla(data);
         })
         .catch(error => {
@@ -75,12 +77,12 @@ function borrarLibro(id) {
         });
 }
 
-function mostrarLibro(libroEpub) {
+function mostrarLibro(book) {
     var params = URLSearchParams && new URLSearchParams(document.location.search.substring(1));
     var url = params && params.get("url") && decodeURIComponent(params.get("url"));
     var currentSectionIndex = (params && params.get("loc")) ? params.get("loc") : undefined;
 
-    var book = ePub("../libros_epub/" + libroEpub);
+    
     let body = document.getElementById("area");
     var rendition = book.renderTo("viewer", {
         flow: "scrolled-doc"
