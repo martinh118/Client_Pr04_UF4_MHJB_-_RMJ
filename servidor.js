@@ -147,6 +147,14 @@ function onRequest(peticio, resposta) {
                     missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
 
                     break;
+                case "eliminarLibro":
+                    
+                    const driveResponse = drive.files.delete({
+                        fileId: objectPeticion["idLibro"]
+                    });
+                    // console.log(driveResponse.status);
+
+                    break;
                 default:
                     break;
             }
