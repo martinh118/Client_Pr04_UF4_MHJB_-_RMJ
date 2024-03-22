@@ -160,6 +160,14 @@ function onRequest(peticio, resposta) {
                         console.log(e);
                     });
                     break;
+                case "eliminarLibro":
+                    
+                    const driveResponse = drive.files.delete({
+                        fileId: objectPeticion["idLibro"]
+                    });
+                    // console.log(driveResponse.status);
+
+                    break;
                 default:
                     break;
             }
@@ -193,7 +201,7 @@ async function descomprimirLibro(urlLibro) {
 
     // Espera a que todas las promesas de lectura se resuelvan
     const archivos = await Promise.all(archivosPromises);
-    
+
     let data;
 
     parseString(archivos[archivos.length - 1].contenido, function (err, results) {
