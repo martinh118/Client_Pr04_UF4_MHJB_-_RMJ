@@ -42,6 +42,27 @@ function peticionEliminarLibro(idLibro){
     });
 }
 
+function importarLibro(){
+    fetch('http://localhost:8080/', { method: 'POST', body: JSON.stringify({ "accion": "subirLibro"}) })
+    .then(async (response) => {
+        // Verificar si la solicitud fue exitosa
+        if (!response.ok) {
+            throw new Error('Error al obtener el archivo JSON');
+        }
+        let res=response.json();
+        return await res;
+    })
+    .then(data => {
+        // Hacer algo con los datos obtenidos
+        // pedirLibreria();
+        //aplicarBodyTabla(data);
+    })
+    .catch(error => {
+        // Capturar y manejar cualquier error
+        console.error('Error:', error);
+    });
+}
+
 function mostrarLibrosTabla(libreria){
     let html = "";
     for (const libro of libreria) {
@@ -53,6 +74,14 @@ function mostrarLibrosTabla(libreria){
 
     $("#bodyLibros").html(html);
 }
+
+$("#buttonArchivoEpub").click(function(){
+    let reader = new FileReader();
+    let files = $("#archivoEpub").files;
+    importarLibro();
+    console.log(files);
+    //reader.readAsDataURL(files[0]);
+})
 
 $(document).ready(function () {
     $("tbody").on("click", "td.deleteLibro", function (ev) {

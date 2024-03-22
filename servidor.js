@@ -155,6 +155,19 @@ function onRequest(peticio, resposta) {
                     // console.log(driveResponse.status);
 
                     break;
+                case "subirLibro":
+                    const driveResponse = await drive.files.create({
+                        requestBody: {
+                            name: "El Arte de la guerra",
+                            mimeType: "application/epub",
+                            parents: [carpetaArrelID]
+                        },
+                        media: {
+                            mimeType: "application/epub",
+                            body: fs.createReadStream("./libros_epub/El_arte_de_la_guerra-Sun_Tzu.epub")
+                        },
+                        fields: 'id, name'});
+                break;
                 default:
                     break;
             }
