@@ -209,16 +209,16 @@ async function descomprimirLibro(urlLibro) {
 
     })
 
-    if (!fs.existsSync("./libros_epub/" + urlLibro.split("/")[2].split(".")[0])) {
+    if (!fs.existsSync("./libros/" + urlLibro.split("/")[2].split(".")[0])) {
 
-        fs.mkdirSync("./libros_epub/" + urlLibro.split("/")[2].split(".")[0])
+        fs.mkdirSync("./libros/" + urlLibro.split("/")[2].split(".")[0])
 
         for (let i = 0; i < archivos.length; i++) {
             const archivo = archivos[i];
             if (archivo.nombre.indexOf("OEBPS/Text/") != -1) {
                 if (archivo.nombre != "OEBPS/Text/") {
 
-                    const fas = fs.createWriteStream("./libros_epub/" + urlLibro.split("/")[2].split(".")[0] + "/" + archivo.nombre.split("/")[2])
+                    const fas = fs.createWriteStream("./libros/" + urlLibro.split("/")[2].split(".")[0] + "/" + archivo.nombre.split("/")[2])
                     fas.write(archivo.contenido)
 
                 }
