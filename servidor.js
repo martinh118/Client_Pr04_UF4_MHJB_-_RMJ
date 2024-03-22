@@ -139,17 +139,17 @@ function onRequest(peticio, resposta) {
                 case "libreria":
                     //Get FILES
 
-                    const driveResponse = await drive.files.list({
+                    const driveResponseL = await drive.files.list({
                         q: `parents in '${carpetaArrelID}' and trashed=false`,
                         fields: 'files(id, name)'
                     });
-                    datosRespuesta = driveResponse.data.files;
+                    datosRespuesta = driveResponseL.data.files;
                     missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
 
                     break;
                 case "eliminarLibro":
                     
-                    const driveResponse = drive.files.delete({
+                    const driveResponseD = drive.files.delete({
                         fileId: objectPeticion["idLibro"]
                     });
                     // console.log(driveResponse.status);
