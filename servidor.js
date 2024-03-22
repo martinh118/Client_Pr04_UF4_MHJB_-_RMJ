@@ -85,7 +85,7 @@ function onRequest(peticio, resposta) {
         console.error(err);
     }).on('data', function (dades) {
         cosPeticio += dades;
-    }).on('end', function () {
+    }).on('end', async function () {
         resposta.on('error', function (err) {
             console.error(err);
         });
@@ -98,7 +98,6 @@ function onRequest(peticio, resposta) {
         if (peticio.method == "GET" && peticio.url.indexOf("?") == -1) {
 
             if (fs.existsSync(filename)) {
-                //console.log("Enviant " + filename);
 
                 fs.readFile(filename, function (err, dades) {
                     let cType = tipusArxiu(filename);
@@ -120,27 +119,18 @@ function onRequest(peticio, resposta) {
                 case "visualizar":
                     const urlLibro = "./libros_epub/" + objectPeticion["idLibro"] + ".epub";
 
-
                     if (fs.existsSync(urlLibro)) {
                         datosRespuesta = descomprimirLibro(urlLibro);
 
                     } else if (!fs.existsSync(urlLibro)) {
-
-                        (async () => {
-                            const libroEpubDrive = await drive.files.get({
-                                fileId: objectPeticion["idLibro"],
-                                alt: 'media'
-                            }, {
-                                responseType: "stream"
-                            });
-                            const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
-                            libroEpubDrive.data.pipe(f)
-                            //console.log(libroEpubDrive);
-
-                        })().catch(e => {
-                            console.log(e);
+                        const libroEpubDrive = await drive.files.get({
+                            fileId: objectPeticion["idLibro"],
+                            alt: 'media'
+                        }, {
+                            responseType: "stream"
                         });
-
+                        const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
+                        libroEpubDrive.data.pipe(f)
                     }
 
                     missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
@@ -148,17 +138,14 @@ function onRequest(peticio, resposta) {
 
                 case "libreria":
                     //Get FILES
-                    (async () => {
-                        const driveResponse = await drive.files.list({
-                            q: `parents in '${carpetaArrelID}' and trashed=false`,
-                            fields: 'files(id, name)'
-                        });
-                        console.log(driveResponse.data.files);
-                        datosRespuesta = driveResponse.data.files;
-                        missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
-                    })().catch(e => {
-                        console.log(e);
+
+                    const driveResponse = await drive.files.list({
+                        q: `parents in '${carpetaArrelID}' and trashed=false`,
+                        fields: 'files(id, name)'
                     });
+                    datosRespuesta = driveResponse.data.files;
+                    missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
+
                     break;
                 default:
                     break;
@@ -267,6 +254,5 @@ function missatgeResposta(resposta, dades, cType) {
 
 const server = HTTP.createServer();
 server.on('request', onRequest);
-
 server.listen(8080);
 console.log("Servidor escoltant en http://localhost:8080");
