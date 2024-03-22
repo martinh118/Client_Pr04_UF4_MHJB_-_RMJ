@@ -127,10 +127,11 @@ function onRequest(peticio, resposta) {
                             responseType: "stream"
                         });
                         const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
-                        libroEpubDrive.data.pipe(f)
-                    }
-
-                    datosRespuesta = descomprimirLibro(urlLibro);
+                        libroEpubDrive.data.pipe(f).on("finish", ()=>{
+                            datosRespuesta = descomprimirLibro(urlLibro);
+                        })
+                        
+                    } else datosRespuesta = descomprimirLibro(urlLibro);
 
                     missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
                     break;
