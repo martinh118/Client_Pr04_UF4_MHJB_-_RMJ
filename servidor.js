@@ -4,7 +4,7 @@ import * as HTTP from 'http';
 import { google } from 'googleapis';
 import JSZip from 'jszip';
 import saveAs from 'file-saver';
-
+import { parseString } from 'xml2js';
 
 const libroID = "1bjZDqVLMGMNdQuIeTpBONE7yMcPeTlF2"
 const carpetaArrelID = "1Lod7g3tfVG_5njZCUW-EnkxY_zTAAaAG"
@@ -134,13 +134,12 @@ function onRequest(peticio, resposta) {
                                 responseType: "stream"
                             });
                             const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
-                            console.log(libroEpubDrive.data.pipe(f));
+                            libroEpubDrive.data.pipe(f)
                             //console.log(libroEpubDrive);
-                           
+
                         })().catch(e => {
                             console.log(e);
                         });
-
 
                     }
 
@@ -164,41 +163,55 @@ function onRequest(peticio, resposta) {
                 default:
                     break;
             }
-
-
-
         }
     });
 }
 
 async function descomprimirLibro(urlLibro) {
-     // Lee el archivo EPUB
-     const contenidoLibro = await fsPromise.readFile(urlLibro);
+    // Lee el archivo EPUB
+    const contenidoLibro = await fsPromise.readFile(urlLibro);
+
+    // Crea una instancia de JSZip
+    const zip = new JSZip();
+
+    // Carga el contenido del archivo EPUB en JSZip
+    const zipContents = await zip.loadAsync(contenidoLibro);
+
+    // Procesa los archivos descomprimidos
+    const archivosPromises = [];
+    zipContents.forEach((relativePath, file) => {
+        // Agrega la promesa de leer el contenido del archivo al arreglo de promesas
+        archivosPromises.push(
+            file.async("string").then((content) => {
+                return {
+                    nombre: relativePath,
+                    contenido: content
+                };
+            })
+        );
+    });
+    
+    // Espera a que todas las promesas de lectura se resuelvan
+    const archivos = await Promise.all(archivosPromises);
+    let data;
+    parseString(archivos[archivos.length-1].contenido, function (err, results){
+        data= results.ncx.navMap[0].navPoint[0].content[0].$.src
         
-     // Crea una instancia de JSZip
-     const zip = new JSZip();
+    })
+    for (let i = 0; i < archivos.length; i++) {
+        const archivo = archivos[i];
+        if(archivo.nombre.indexOf("OEBPS/Text/")!= -1){
+            if(archivo.nombre!="OEBPS/Text/"){
 
-     // Carga el contenido del archivo EPUB en JSZip
-     const zipContents = await zip.loadAsync(contenidoLibro);
+                console.log("./libros_epub/LIBRO/"+archivo.nombre.split("/")[2])
+                let blob=new Blob([archivo.contenido],{ type:'application/xhtml+xml'})
+                let f=new File([blob],""+archivo.nombre.split("/")[2],{ type:'application/xhtml+xml'})
+                const fas = fs.createWriteStream("./libros_epub/LIBRO/"+archivo.nombre.split("/")[2],)
+                await f.stream().pipeTo(fas)
 
-     // Procesa los archivos descomprimidos
-     const archivosPromises = [];
-     zipContents.forEach((relativePath, file) => {
-         // Agrega la promesa de leer el contenido del archivo al arreglo de promesas
-         console.log(relativePath);
-         archivosPromises.push(
-             file.async("string").then((content) => {
-                 return {
-                     nombre: relativePath,
-                     contenido: content
-                 };
-             })
-         );
-     });
-
-     // Espera a que todas las promesas de lectura se resuelvan
-     const archivos = await Promise.all(archivosPromises);
-     
+            }
+        }
+    }
     return archivos;
 }
 
