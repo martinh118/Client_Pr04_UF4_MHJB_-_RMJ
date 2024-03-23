@@ -113,69 +113,75 @@ function onRequest(peticio, resposta) {
                 });
             }
             else missatgeError(resposta, 404, "Not Found (" + filename + ")");
+
+
         } else {
-
-            
-
-            let objectPeticion = JSON.parse(cosPeticio);
             let datosRespuesta;
-            switch (objectPeticion["accion"]) {
-                case "visualizar":
-                    const urlLibro = "./libros_epub/" + objectPeticion["idLibro"] + ".epub";
+            const phct = peticio.headers['content-type'];
+            if (phct && phct.includes("multipart/form-data")) {
 
-                    if (!fs.existsSync(urlLibro)) {
-                        const libroEpubDrive = await drive.files.get({
-                            fileId: objectPeticion["idLibro"],
-                            alt: 'media'
-                        }, {
-                            responseType: "stream"
+                const form = IncomingForm();
+                form.on('file', function(name, file) {
+                    console.log(file);
+                 });
+                form.parse(peticio, function (err, fields, files) {
+                    console.log(fields);   // camps de text
+                    console.log(fields.accion);
+                    console.log(fields.archivoLibro);
+                        // arxius
+                });
+
+                console.log(form);
+
+
+                datosRespuesta = "Llibre importat correctament.";
+                //missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
+            } else {
+
+                let objectPeticion = JSON.parse(cosPeticio);
+                
+                switch (objectPeticion["accion"]) {
+                    case "visualizar":
+                        const urlLibro = "./libros_epub/" + objectPeticion["idLibro"] + ".epub";
+
+                        if (!fs.existsSync(urlLibro)) {
+                            const libroEpubDrive = await drive.files.get({
+                                fileId: objectPeticion["idLibro"],
+                                alt: 'media'
+                            }, {
+                                responseType: "stream"
+                            });
+                            const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
+                            libroEpubDrive.data.pipe(f).on("finish", () => {
+                                datosRespuesta = descomprimirLibro(urlLibro);
+                            })
+
+                        } else datosRespuesta = descomprimirLibro(urlLibro);
+
+                        missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
+                        break;
+
+                    case "libreria":
+                        //Get FILES
+
+                        const driveResponseL = await drive.files.list({
+                            q: `parents in '${carpetaArrelID}' and trashed=false`,
+                            fields: 'files(id, name)'
                         });
-                        const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
-                        libroEpubDrive.data.pipe(f).on("finish", () => {
-                            datosRespuesta = descomprimirLibro(urlLibro);
-                        })
+                        datosRespuesta = driveResponseL.data.files;
+                        missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
 
-                    } else datosRespuesta = descomprimirLibro(urlLibro);
-
-                    missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
-                    break;
-
-                case "libreria":
-                    //Get FILES
-
-                    const driveResponseL = await drive.files.list({
-                        q: `parents in '${carpetaArrelID}' and trashed=false`,
-                        fields: 'files(id, name)'
-                    });
-                    datosRespuesta = driveResponseL.data.files;
-                    missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
-
-                    break;
-                case "eliminarLibro":
-                    const form = IncomingForm();
-                    form.parse(peticio, function (err, fields, files) {
-                        console.log(fields);   // camps de text
-                        console.log(fields.nom);
-                        console.log(fields.edat);
-                        console.log(files);    // arxius
-        
-                        // Guardar l'arxiu
-                        // TODO: comprovar que realment s'ha pujat un arxiu!
-                        const temporal = files.arxiu.filepath;
-                        const actual = './' + files.arxiu.originalFilename;
-                        fs.copyFileSync(temporal, actual);  // Copiar a la destinació definitiva
-                        fs.unlinkSync(temporal);            // Esborrar la còpia temporal
-                    });
-                    const driveResponseD = drive.files.delete({
-                        fileId: objectPeticion["idLibro"]
-                    });
-                    // console.log(driveResponse.status);
-
-                    break;
-                case "subirLibro":
-                    break;
-                default:
-                    break;
+                        break;
+                    case "eliminarLibro":
+                        const driveResponse = drive.files.delete({
+                            fileId: objectPeticion["idLibro"]
+                        });
+                        datosRespuesta = "Llibre esborrat correctament.";
+                        missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     });
