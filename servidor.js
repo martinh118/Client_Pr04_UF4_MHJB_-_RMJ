@@ -127,11 +127,13 @@ function onRequest(peticio, resposta) {
                             responseType: "stream"
                         });
                         const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
-                        libroEpubDrive.data.pipe(f).on("finish", ()=>{
-                            datosRespuesta = descomprimirLibro(urlLibro);
+                        libroEpubDrive.data.pipe(f).on("finish", async () => {
+                            await descomprimirLibro(urlLibro);
                         })
-                        
-                    } else datosRespuesta = descomprimirLibro(urlLibro);
+
+                    } else await descomprimirLibro(urlLibro);
+
+                    datosRespuesta = getLibro("./libros/" + objectPeticion["idLibro"])
 
                     missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
                     break;
@@ -148,11 +150,10 @@ function onRequest(peticio, resposta) {
 
                     break;
                 case "eliminarLibro":
-                    
+
                     const driveResponseD = drive.files.delete({
                         fileId: objectPeticion["idLibro"]
                     });
-                    // console.log(driveResponse.status);
 
                     break;
                 case "subirLibro":
@@ -166,13 +167,19 @@ function onRequest(peticio, resposta) {
                             mimeType: "application/epub",
                             body: fs.createReadStream("./libros_epub/El_arte_de_la_guerra-Sun_Tzu.epub")
                         },
-                        fields: 'id, name'});
-                break;
+                        fields: 'id, name'
+                    });
+                    break;
                 default:
                     break;
             }
         }
     });
+}
+
+function getLibro(urlFichero) {
+    const dir = fs.readdirSync(urlFichero);
+    console.log(dir)
 }
 
 async function descomprimirLibro(urlLibro) {
@@ -225,7 +232,6 @@ async function descomprimirLibro(urlLibro) {
             }
         }
     }
-    return archivos;
 }
 
 function header(resposta, codi, cType) {
