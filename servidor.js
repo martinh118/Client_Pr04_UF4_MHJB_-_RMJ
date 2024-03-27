@@ -3,6 +3,8 @@ import * as fs from 'fs';
 import * as HTTP from 'http';
 import { google } from 'googleapis';
 import JSZip from 'jszip';
+import IncomingForm from 'formidable';
+
 import saveAs from 'file-saver';
 import { parseString } from 'xml2js';
 
@@ -111,13 +113,36 @@ function onRequest(peticio, resposta) {
                 });
             }
             else missatgeError(resposta, 404, "Not Found (" + filename + ")");
-        } else {
 
-            let objectPeticion = JSON.parse(cosPeticio);
+
+        } else {
             let datosRespuesta;
-            switch (objectPeticion["accion"]) {
-                case "visualizar":
-                    const urlLibro = "./libros_epub/" + objectPeticion["idLibro"] + ".epub";
+            const phct = peticio.headers['content-type'];
+            if (phct && phct.includes("multipart/form-data")) {
+
+                const form = IncomingForm();
+                form.on('file', function(name, file) {
+                    console.log(file);
+                 });
+                form.parse(peticio, function (err, fields, files) {
+                    console.log(fields);   // camps de text
+                    console.log(fields.accion);
+                    console.log(fields.archivoLibro);
+                        // arxius
+                });
+
+                console.log(form);
+
+
+                datosRespuesta = "Llibre importat correctament.";
+                //missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
+            } else {
+
+                let objectPeticion = JSON.parse(cosPeticio);
+                
+                switch (objectPeticion["accion"]) {
+                    case "visualizar":
+                        const urlLibro = "./libros_epub/" + objectPeticion["idLibro"] + ".epub";
 
                     if (!fs.existsSync(urlLibro)) {
                         const libroEpubDrive = await drive.files.get({
@@ -134,26 +159,40 @@ function onRequest(peticio, resposta) {
                     } else await descomprimirLibro(urlLibro);
 
                     datosRespuesta = getLibro("./libros/" + objectPeticion["idLibro"])
+                        if (!fs.existsSync(urlLibro)) {
+                            const libroEpubDrive = await drive.files.get({
+                                fileId: objectPeticion["idLibro"],
+                                alt: 'media'
+                            }, {
+                                responseType: "stream"
+                            });
+                            const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
+                            libroEpubDrive.data.pipe(f).on("finish", () => {
+                                datosRespuesta = descomprimirLibro(urlLibro);
+                            })
 
-                    missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
-                    break;
+                        } else datosRespuesta = descomprimirLibro(urlLibro);
 
-                case "libreria":
-                    //Get FILES
+                        missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
+                        break;
 
-                    const driveResponseL = await drive.files.list({
-                        q: `parents in '${carpetaArrelID}' and trashed=false`,
-                        fields: 'files(id, name)'
-                    });
-                    datosRespuesta = driveResponseL.data.files;
-                    missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
+                    case "libreria":
+                        //Get FILES
+
+                        const driveResponseL = await drive.files.list({
+                            q: `parents in '${carpetaArrelID}' and trashed=false`,
+                            fields: 'files(id, name)'
+                        });
+                        datosRespuesta = driveResponseL.data.files;
+                        missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
 
                     break;
                 case "eliminarLibro":
-
+                    
                     const driveResponseD = drive.files.delete({
                         fileId: objectPeticion["idLibro"]
                     });
+                    // console.log(driveResponse.status);
 
                     break;
                 case "subirLibro":
@@ -167,9 +206,8 @@ function onRequest(peticio, resposta) {
                             mimeType: "application/epub",
                             body: fs.createReadStream("./libros_epub/El_arte_de_la_guerra-Sun_Tzu.epub")
                         },
-                        fields: 'id, name'
-                    });
-                    break;
+                        fields: 'id, name'});
+                break;
                 default:
                     break;
             }
