@@ -32,7 +32,7 @@ function onRequest(peticio, resposta) {
 
                 const driveResponse = await drive.files.create({
                     requestBody: {
-                        name: files.archivoEpub[0].originalFilename.replaceAll("_"," ").replace(".epub",""),
+                        name: files.archivoEpub[0].originalFilename.replaceAll("_", " ").replace(".epub", ""),
                         mimeType: "application/epub",
                         parents: [carpetaArrelID]
                     },
@@ -42,7 +42,7 @@ function onRequest(peticio, resposta) {
                     },
                     fields: 'id, name'
                 });
-                let datosRespuesta=driveResponse.status
+                let datosRespuesta = driveResponse.status
                 missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
                 console.log("Archivo subido correctamente")
                 fs.unlinkSync(actual);
@@ -97,6 +97,7 @@ function onRequest(peticio, resposta) {
 
                     switch (objectPeticion["accion"]) {
                         case "visualizar":
+
                             const urlLibro = "./libros_epub/" + objectPeticion["idLibro"] + ".epub";
 
                             if (!fs.existsSync(urlLibro)) {
@@ -109,25 +110,37 @@ function onRequest(peticio, resposta) {
                                 const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
                                 libroEpubDrive.data.pipe(f).on("finish", async () => {
                                     await descomprimirLibro(urlLibro);
+
+                                    let pagLibro = fs.readdirSync("./libros/" + objectPeticion["idLibro"]).sort((a, b) => {
+                                        if (a > b) {
+                                            return -1;
+                                        }
+                                        if (a < b) {
+                                            return 1;
+                                        }
+                                    });
+                                    console.log(pagLibro)
+                                    let pagina = fs.readFileSync("./libros/" + objectPeticion["idLibro"] + "/" + pagLibro[objectPeticion["numPag"]])
+    
+                                    datosRespuesta = pagina.toString();
                                 })
 
-                            } else await descomprimirLibro(urlLibro);
 
-                            datosRespuesta = getLibro("./libros/" + objectPeticion["idLibro"])
-                            if (!fs.existsSync(urlLibro)) {
-                                const libroEpubDrive = await drive.files.get({
-                                    fileId: objectPeticion["idLibro"],
-                                    alt: 'media'
-                                }, {
-                                    responseType: "stream"
+                            } else {
+
+                                let pagLibro = fs.readdirSync("./libros/" + objectPeticion["idLibro"]).sort((a, b) => {
+                                    if (a > b) {
+                                        return -1;
+                                    }
+                                    if (a < b) {
+                                        return 1;
+                                    }
                                 });
-                                const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
-                                libroEpubDrive.data.pipe(f).on("finish", () => {
-                                    datosRespuesta = descomprimirLibro(urlLibro);
-                                })
+                                console.log(pagLibro)
+                                let pagina = fs.readFileSync("./libros/" + objectPeticion["idLibro"] + "/" + pagLibro[objectPeticion["numPag"]])
 
-                            } else datosRespuesta = descomprimirLibro(urlLibro);
-
+                                datosRespuesta = pagina.toString();
+                            }
                             missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
                             break;
 
@@ -157,18 +170,13 @@ function onRequest(peticio, resposta) {
         });
 }
 
-function getLibro(urlFichero) {
-    const dir = fs.readdirSync(urlFichero);
-    console.log(dir)
-}
-
 async function descomprimirLibro(urlLibro) {
+
     // Lee el archivo EPUB
     const contenidoLibro = await fsPromise.readFile(urlLibro);
 
     // Crea una instancia de JSZip
     const zip = new JSZip();
-
     // Carga el contenido del archivo EPUB en JSZip
     const zipContents = await zip.loadAsync(contenidoLibro);
 
@@ -199,9 +207,10 @@ async function descomprimirLibro(urlLibro) {
     if (!fs.existsSync("./libros/" + urlLibro.split("/")[2].split(".")[0])) {
 
         fs.mkdirSync("./libros/" + urlLibro.split("/")[2].split(".")[0])
-
+        console.log(archivos.filter((archivo)=> archivo.nombre=="toc.ncx"))
         for (let i = 0; i < archivos.length; i++) {
             const archivo = archivos[i];
+            console.log(archivo.nombre)
             if (archivo.nombre.indexOf("OEBPS/Text/") != -1) {
                 if (archivo.nombre != "OEBPS/Text/") {
 

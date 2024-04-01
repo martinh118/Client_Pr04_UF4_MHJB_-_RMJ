@@ -553,3 +553,15 @@
 table,tr,th,td{
     border: 1px solid black;
 }
+#area{
+    width: 70%;
+    margin: auto;
+}
+#libro{
+    display: flex;
+}
+.botones{
+    width: 100px;
+    height: 100px;
+    font-size: 90px;
+}

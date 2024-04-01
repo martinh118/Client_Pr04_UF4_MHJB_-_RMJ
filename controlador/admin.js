@@ -80,10 +80,7 @@ form.addEventListener(
         const archivoEpub = document.getElementById("archivoEpub")
         const form = document.getElementById("formulari");
         const fd = new FormData(form);
-        console.log(archivoEpub.files[0].type)
-        console.log(archivoEpub.files[0].name)
 
-        console.log(await archivoEpub.files[0].arrayBuffer())
         fd.append("name", archivoEpub.files[0].name)
         fd.append("epub", await archivoEpub.files[0].text())
         fetch('http://localhost:8080/', {

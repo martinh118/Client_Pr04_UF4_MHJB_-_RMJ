@@ -17,31 +17,30 @@
 
 <body id="bodyId">
     <div id="botonesControlLibro" hidden>
-        <button><a href="">Tancar Llibre</a></button>
-        <a id="prev" href="#prev" class="arrow" style="visibility: visible;">‹</a>
-        <a id="next" href="#next" class="arrow" style="visibility: visible;">›</a>
+        <div id="libro">
+            <button type="button" id="prev" class="botones"><</button>
+            <button style="margin: auto; font-size: 40px;" id="cerrarLibro">Tancar Llibre</button>
+            <button type="button" id="next" class="botones">></button>
+        </div>
+        <div id="area">
+        </div>
     </div>
+
+    <div id="tablaLibros">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom llibre</th>
+                </tr>
+            </thead>
+            <tbody id="bodyLibros">
+                
+            </tbody>
+        </table>
+       <br><br>
     
-    <div id="area">
+        <button id="visualizar"><a href="../vista/index.html">Tornar enrere</a></button>
     </div>
-
-    <div id="viewer" class="spreads">
-
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Nom llibre</th>
-            </tr>
-        </thead>
-        <tbody id="bodyLibros">
-            
-        </tbody>
-    </table>
-   <br><br>
-
-    <button id="visualizar"><a href="../vista/index.html">Tornar enrere</a></button>
 
 
 </body>
