@@ -9,6 +9,7 @@
         "google-auth-library": "^9.7.0",
         "googleapis": "^105.0.0",
         "jszip": "^3.10.1",
+        "stream": "^0.0.2",
         "xml2js": "^0.6.2"
     }
 }

@@ -1,4 +1,4 @@
-const form = document.forms.namedItem("fileinfo");
+const form = document.getElementById("formulari");
 
 function pedirLibreria() {
     fetch('http://localhost:8080/', { method: 'POST', body: JSON.stringify({ "accion": "libreria" }) })
@@ -76,24 +76,34 @@ function mostrarLibrosTabla(libreria) {
 
 form.addEventListener(
     "submit",
-    function (ev) {
-        const fd = new FormData(document.forms.namedItem("fileinfo"));
-        // fd.append("accion", "importarLibro");
-        fd.get("archivoEpub");
+    async function (ev) {
+        const archivoEpub = document.getElementById("archivoEpub")
+        const form = document.getElementById("formulari");
+        const fd = new FormData(form);
+        console.log(archivoEpub.files[0].type)
+        console.log(archivoEpub.files[0].name)
 
-        $.ajax({
-            url: "http://localhost:8080/",
+        console.log(await archivoEpub.files[0].arrayBuffer())
+        fd.append("name", archivoEpub.files[0].name)
+        fd.append("epub", await archivoEpub.files[0].text())
+        fetch('http://localhost:8080/', {
             method: "POST",
-            data: fd,
-            contentType: false,
-            processData: false,
-            success: function(data) {
-                alert(JSON.parse(data));
-            },
-            error: function (data) {
-                alert(data.missatge);
+            body: fd
+        }).then(async (response) => {
+            // Verificar si la solicitud fue exitosa
+            if (!response.ok) {
+                throw new Error('Error al obtener el archivo JSON');
             }
+            let res = response.json();
+            location.replace("../vista/administrador.html")
+            alert("El archivo se subio correctamente")
+            return await res;
+        })
+        .catch(error => {
+            // Capturar y manejar cualquier error
+            console.error('Error:', error);
         });
+
     },
     false,
 );
