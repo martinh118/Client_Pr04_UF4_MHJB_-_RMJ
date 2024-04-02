@@ -33,6 +33,19 @@ function mostrarLibrosTabla(libreria) {
     $("#bodyLibros").html(html);
 }
 
+document.getElementById("prev").addEventListener("click", () => {
+    let libro = document.getElementById("idLibro").value
+    let numPag = document.getElementById("numPag").value
+
+    pedirLibro(libro, parseInt(numPag) - 1)
+})
+document.getElementById("next").addEventListener("click", () => {
+    let libro = document.getElementById("idLibro").value
+    let numPag = document.getElementById("numPag").value
+
+    pedirLibro(libro, parseInt(numPag) + 1)
+})
+
 function pedirLibro(libro, numPag) {
     fetch('http://localhost:8080/', { method: 'POST', body: JSON.stringify({ "accion": "visualizar", 'idLibro': libro, "numPag": numPag }) })
         .then(async (response) => {
@@ -43,26 +56,19 @@ function pedirLibro(libro, numPag) {
             return await response.json();
         })
         .then(data => {
-            document.getElementById("area").innerHTML = "";
-
+            console.log(data)
             let pagina = data.substring(data.indexOf("</head>"), data.indexOf("</html>"))
 
+            document.getElementById("area").innerHTML = "";
             document.getElementById("area").innerHTML = pagina;
             document.getElementById("tablaLibros").hidden = true;
-
-            document.getElementById("prev").removeEventListener("click", () => { pedirLibro(libro, numPag - 1) })
-            document.getElementById("next").removeEventListener("click", () => { pedirLibro(libro, numPag + 1) })
+            document.getElementById("idLibro").setAttribute("value", libro)
+            document.getElementById("numPag").setAttribute("value", numPag)
 
             if (numPag != 0) {
-
                 document.getElementById("prev").disabled = false;
-                document.getElementById("prev").addEventListener("click", () => { pedirLibro(libro, numPag - 1) })
 
             } else document.getElementById("prev").disabled = true
-
-            document.getElementById("next").addEventListener("click", () => { pedirLibro(libro, numPag + 1) })
-
-            console.log(numPag)
         })
         .catch(error => {
             // Capturar y manejar cualquier error

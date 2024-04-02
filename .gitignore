@@ -1,4 +1,4 @@
 node_modules
 credentialsAdmin.json
-libros_epub/
-libros/
+libros_epub/*
+libros/*

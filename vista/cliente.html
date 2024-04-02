@@ -6,18 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
     <title>Free Readers</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
-    <script src="..\node_modules\epubjs\dist\epub.min.js"></script>
     <link rel="stylesheet" href="../css/client.css">
     <script type="module" src="../controlador/cliente.js"></script>
-
-
-
 </head>
 
 <body id="bodyId">
     <div id="botonesControlLibro" hidden>
         <div id="libro">
+            <input type="text" id="idLibro" hidden>
+            <input type="text" id="numPag" hidden>
             <button type="button" id="prev" class="botones"><</button>
             <button style="margin: auto; font-size: 40px;" id="cerrarLibro">Tancar Llibre</button>
             <button type="button" id="next" class="botones">></button>

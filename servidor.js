@@ -4,8 +4,8 @@ import * as HTTP from 'http';
 import { google } from 'googleapis';
 import JSZip from 'jszip';
 import IncomingForm from 'formidable';
-import { parseString } from 'xml2js';
-import { Stream } from "stream"
+import * as convert from "xml-js";
+import { once } from "events";
 
 const libroID = "1bjZDqVLMGMNdQuIeTpBONE7yMcPeTlF2"
 const carpetaArrelID = "1Lod7g3tfVG_5njZCUW-EnkxY_zTAAaAG"
@@ -87,7 +87,6 @@ function onRequest(peticio, resposta) {
                 const phct = peticio.headers['content-type'];
                 if (phct && phct.includes("multipart/form-data")) {
 
-                    console.log(typeof cosPeticio)
                     const fas = fs.createWriteStream("./prueba.epub")
                     fas.write(peticio)
 
@@ -100,7 +99,7 @@ function onRequest(peticio, resposta) {
 
                             const urlLibro = "./libros_epub/" + objectPeticion["idLibro"] + ".epub";
 
-                            if (!fs.existsSync(urlLibro)) {
+                            if (!fs.existsSync(urlLibro) || !fs.existsSync("./libros/"+ objectPeticion["idLibro"])) {
                                 const libroEpubDrive = await drive.files.get({
                                     fileId: objectPeticion["idLibro"],
                                     alt: 'media'
@@ -110,35 +109,15 @@ function onRequest(peticio, resposta) {
                                 const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
                                 libroEpubDrive.data.pipe(f).on("finish", async () => {
                                     await descomprimirLibro(urlLibro);
-
-                                    let pagLibro = fs.readdirSync("./libros/" + objectPeticion["idLibro"]).sort((a, b) => {
-                                        if (a > b) {
-                                            return -1;
-                                        }
-                                        if (a < b) {
-                                            return 1;
-                                        }
-                                    });
-                                    console.log(pagLibro)
+                                    let pagLibro = fs.readdirSync("./libros/" + objectPeticion["idLibro"]).sort()
                                     let pagina = fs.readFileSync("./libros/" + objectPeticion["idLibro"] + "/" + pagLibro[objectPeticion["numPag"]])
-    
-                                    datosRespuesta = pagina.toString();
+                                    if(!pagina)datosRespuesta = pagina.toString();
                                 })
-
 
                             } else {
 
-                                let pagLibro = fs.readdirSync("./libros/" + objectPeticion["idLibro"]).sort((a, b) => {
-                                    if (a > b) {
-                                        return -1;
-                                    }
-                                    if (a < b) {
-                                        return 1;
-                                    }
-                                });
-                                console.log(pagLibro)
+                                let pagLibro = fs.readdirSync("./libros/" + objectPeticion["idLibro"]).sort((a, b) => a.length - b.length)
                                 let pagina = fs.readFileSync("./libros/" + objectPeticion["idLibro"] + "/" + pagLibro[objectPeticion["numPag"]])
-
                                 datosRespuesta = pagina.toString();
                             }
                             missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
@@ -197,26 +176,21 @@ async function descomprimirLibro(urlLibro) {
     // Espera a que todas las promesas de lectura se resuelvan
     const archivos = await Promise.all(archivosPromises);
 
-    let data;
-
-    parseString(archivos[archivos.length - 1].contenido, function (err, results) {
-        data = results.ncx.navMap[0].navPoint[0].content[0].$.src
-
-    })
-
     if (!fs.existsSync("./libros/" + urlLibro.split("/")[2].split(".")[0])) {
 
         fs.mkdirSync("./libros/" + urlLibro.split("/")[2].split(".")[0])
-        console.log(archivos.filter((archivo)=> archivo.nombre=="toc.ncx"))
+
+        const toc = archivos.filter((archivo) => archivo.nombre == "toc.ncx")
+        const indice = JSON.parse(convert.xml2json(toc[0].contenido, { compact: true, spaces: 4 })).ncx.navMap.navPoint
+        const nombreArchivos = indice.map((capitulo) => capitulo.content._attributes.src.replaceAll("%20", " "))
+
         for (let i = 0; i < archivos.length; i++) {
             const archivo = archivos[i];
-            console.log(archivo.nombre)
-            if (archivo.nombre.indexOf("OEBPS/Text/") != -1) {
-                if (archivo.nombre != "OEBPS/Text/") {
-
-                    const fas = fs.createWriteStream("./libros/" + urlLibro.split("/")[2].split(".")[0] + "/" + archivo.nombre.split("/")[2])
-                    fas.write(archivo.contenido)
-
+            if (nombreArchivos.includes(archivo.nombre)) {
+                const fas = fs.createWriteStream("./libros/" + urlLibro.split("/")[2].split(".")[0] + archivo.nombre.substring(archivo.nombre.lastIndexOf("/")))
+                if (!fas.write(archivo.contenido)) {
+                    await once(fas, 'drain')
+                    fas.end()
                 }
             }
         }
