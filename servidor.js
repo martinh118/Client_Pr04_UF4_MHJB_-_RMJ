@@ -118,7 +118,13 @@ function onRequest(peticio, resposta) {
 
                                 let pagLibro = fs.readdirSync("./libros/" + objectPeticion["idLibro"]).sort((a, b) => a.length - b.length)
                                 let pagina = fs.readFileSync("./libros/" + objectPeticion["idLibro"] + "/" + pagLibro[objectPeticion["numPag"]])
-                                datosRespuesta = pagina.toString();
+                                
+                                if((objectPeticion["numPag"] +1) == pagLibro.length){
+                                    datosRespuesta = { "pagina": pagina.toString(), "ultimaPag" : true};
+                                }else{
+                                    datosRespuesta = { "pagina": pagina.toString(), "ultimaPag" : false};
+                                }
+                                
                             }
                             missatgeResposta(resposta, JSON.stringify(datosRespuesta), 'application/json');
                             break;

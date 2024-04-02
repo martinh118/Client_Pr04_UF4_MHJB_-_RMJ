@@ -57,7 +57,11 @@ function pedirLibro(libro, numPag) {
         })
         .then(data => {
             console.log(data)
-            let pagina = data.substring(data.indexOf("</head>"), data.indexOf("</html>"))
+            if(data['ultimaPag'] == true){
+                document.getElementById("next").disabled = true;
+            }else document.getElementById("next").disabled = false;
+
+            let pagina = data['pagina'].substring(data['pagina'].indexOf("</head>"), data['pagina'].indexOf("</html>"))
 
             document.getElementById("area").innerHTML = "";
             document.getElementById("area").innerHTML = pagina;
