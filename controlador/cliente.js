@@ -39,6 +39,16 @@ document.getElementById("prev").addEventListener("click", () => {
 
     pedirLibro(libro, parseInt(numPag) - 1)
 })
+
+document.addEventListener("keydown", function (event) {
+    let libro = document.getElementById("idLibro").value
+    let numPag = document.getElementById("numPag").value
+
+    if (event.key === "ArrowLeft" && numPag != 0)pedirLibro(libro, parseInt(numPag) - 1)
+    if (event.key === "ArrowRight") pedirLibro(libro, parseInt(numPag) + 1)
+
+});
+
 document.getElementById("next").addEventListener("click", () => {
     let libro = document.getElementById("idLibro").value
     let numPag = document.getElementById("numPag").value
@@ -56,8 +66,7 @@ function pedirLibro(libro, numPag) {
             return await response.json();
         })
         .then(data => {
-            console.log(data)
-            let pagina = data.substring(data.indexOf("</head>"), data.indexOf("</html>"))
+            let pagina = data.substring(data.pagina.indexOf("</head>"), data.indexOf("</html>"))
 
             document.getElementById("area").innerHTML = "";
             document.getElementById("area").innerHTML = pagina;
@@ -65,10 +74,8 @@ function pedirLibro(libro, numPag) {
             document.getElementById("idLibro").setAttribute("value", libro)
             document.getElementById("numPag").setAttribute("value", numPag)
 
-            if (numPag != 0) {
-                document.getElementById("prev").disabled = false;
-
-            } else document.getElementById("prev").disabled = true
+            if (numPag != 0)document.getElementById("prev").disabled = false;
+            else document.getElementById("prev").disabled = true
         })
         .catch(error => {
             // Capturar y manejar cualquier error
@@ -89,7 +96,6 @@ function borrarLibro(id) {
         })
         .then(data => {
             // Hacer algo con los datos obtenidos
-            console.log(data);
             aplicarBodyTabla(data);
         })
         .catch(error => {
