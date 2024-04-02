@@ -109,7 +109,7 @@ function onRequest(peticio, resposta) {
                                 const f = fs.createWriteStream("./libros_epub/" + objectPeticion["idLibro"] + ".epub",)
                                 libroEpubDrive.data.pipe(f).on("finish", async () => {
                                     await descomprimirLibro(urlLibro);
-                                    let pagLibro = fs.readdirSync("./libros/" + objectPeticion["idLibro"]).sort()
+                                    let pagLibro = fs.readdirSync("./libros/" + objectPeticion["idLibro"]).sort((a, b) => a.length - b.length)
                                     let pagina = fs.readFileSync("./libros/" + objectPeticion["idLibro"] + "/" + pagLibro[objectPeticion["numPag"]])
                                     if(!pagina)datosRespuesta = pagina.toString();
                                 })
@@ -186,13 +186,14 @@ async function descomprimirLibro(urlLibro) {
 
         fs.mkdirSync("./libros/" + urlLibro.split("/")[2].split(".")[0])
 
-        const toc = archivos.filter((archivo) => archivo.nombre == "toc.ncx")
+        const toc = archivos.filter((archivo) => archivo.nombre.includes("toc.ncx"))
         const indice = JSON.parse(convert.xml2json(toc[0].contenido, { compact: true, spaces: 4 })).ncx.navMap.navPoint
-        const nombreArchivos = indice.map((capitulo) => capitulo.content._attributes.src.replaceAll("%20", " "))
+        const nombreArchivos =Array.isArray(indice) ? indice.map((capitulo) => capitulo.content._attributes.src.replaceAll("%20", " ")) : indice.content._attributes.src.replaceAll("%20", " ");
 
         for (let i = 0; i < archivos.length; i++) {
             const archivo = archivos[i];
-            if (nombreArchivos.includes(archivo.nombre)) {
+            console.log(archivo.nombre)
+            if (nombreArchivos.includes(archivo.nombre) ) {
                 const fas = fs.createWriteStream("./libros/" + urlLibro.split("/")[2].split(".")[0] + archivo.nombre.substring(archivo.nombre.lastIndexOf("/")))
                 if (!fas.write(archivo.contenido)) {
                     await once(fas, 'drain')
