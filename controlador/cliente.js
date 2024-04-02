@@ -43,9 +43,10 @@ document.getElementById("prev").addEventListener("click", () => {
 document.addEventListener("keydown", function (event) {
     let libro = document.getElementById("idLibro").value
     let numPag = document.getElementById("numPag").value
+    let isLast= document.getElementById("next").disabled
 
     if (event.key === "ArrowLeft" && numPag != 0)pedirLibro(libro, parseInt(numPag) - 1)
-    if (event.key === "ArrowRight") pedirLibro(libro, parseInt(numPag) + 1)
+    if (event.key === "ArrowRight" && !isLast) pedirLibro(libro, parseInt(numPag) + 1)
 
 });
 
